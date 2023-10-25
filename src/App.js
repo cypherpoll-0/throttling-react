@@ -1,67 +1,77 @@
 import { useState } from "react";
+import useThrottle from "./useThrottle";
 import "./App.css";
+import { sample } from "./data";
 
 function App() {
-	const [throttledText, setThrottledText] = useState("");
-	const [time, setTime] = useState(5000);
-	const [count, setCount] = useState(5);
+	const [calls, setCalls] = useState(0);
+	const [calls2, setCalls2] = useState(0);
+	const [position, setPosition] = useState(0);
 
-	function toBeThrottled(value) {
-		setThrottledText(value);
-		console.log(value);
+	function handleScroll() {
+		setCalls((c) => c + 1);
+
+		setPosition(
+			Math.round(
+				((document.documentElement.scrollTop + document.body.scrollTop) /
+					(document.documentElement.scrollHeight -
+						document.documentElement.clientHeight)) *
+					100
+			)
+		);
 	}
 
-	const throttler = (fn, time) => {
-		let flag = true;
-		return function (...args) {
-			let context = this;
-			if (flag) {
-				fn.apply(context, args);
-				flag = false;
-				setTimeout(() => {
-					flag = true;
-				}, time);
-			}
-		};
-	};
+	function handleScroll2() {
+		setCalls2((c) => c + 1);
 
-	function handleThrottle(value) {
-		const throttled = throttler(toBeThrottled, time);
-		// const timer = setInterval(function () {
-		// 	setCount(count - 1);
-		// 	console.log(count);
-		// 	if (count === 0) {
-		// 		clearInterval(timer);
-		// 		console.log("Time's up!");
-		// 	}
-		// }, 1000);
-		throttled(value);
+		setPosition(
+			Math.round(
+				((document.documentElement.scrollTop + document.body.scrollTop) /
+					(document.documentElement.scrollHeight -
+						document.documentElement.clientHeight)) *
+					100
+			)
+		);
 	}
+
+	window.addEventListener("scroll", useThrottle(handleScroll, 2000));
+	window.addEventListener("scroll", handleScroll2);
 
 	return (
 		<div className="App">
 			<h1>Throttling example</h1>
+			<h2 className="calls">
+				Scrolling Calls without throttling of 2 seconds: {calls2}
+			</h2>
+			<br />
+			<br />
+			<br />
+			<h2 className="calls">
+				Scrolling Calls with throttling of 2 seconds: {calls}
+			</h2>
+			<br />
 			<br />
 			<p>
 				Throttling is a technique that limits the number of times a function can
 				be called over a given period of time. It is often used to control the
 				frequency at which an event is triggered or a request is sent, in order
-				to prevent overwhelming a system or degrading performance.
+				to prevent overwhelming a system or degrading performance. I have made
+				this website to show the effects of throttling on scrolling of window.
 			</p>
 			<br />
-			<input
-				placeholder="Enter text to be throttled here"
-				onChange={(e) => handleThrottle(e.target.value)}
-			/>
+			<h2>Sample data</h2>
 			<br />
-			<h3>
-				{throttledText} is being displayed at a time interval of {time / 1000}
-			</h3>
-			<br />
-			<h3>
-				Throttling has started and all text changes are overlooked for {count}{" "}
-				seconds
-			</h3>
+			{sample.map((data, index) => {
+				return (
+					<div id={index}>
+						<p>{data.name}</p>
+						<p>{data.email}</p>
+						<p>{data.company}</p>
+						<p>{data.phone}</p>
+						<br />
+					</div>
+				);
+			})}
 		</div>
 	);
 }
